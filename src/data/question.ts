@@ -54,11 +54,11 @@ export const FormQuestionsData: FormQuestions[] = [
     text: "What currency will you be investing in?",
     name: "currency",
     options: [
-      { label: "£ Pound (GBP)", value: "Pound" },
-      { label: "$ Dollar (USD)", value: "Dollar" },
-      { label: "₦ Naira (NGN)", value: "Naira" },
-      { label: "€ Euro (EUR)", value: "Euro" },
-      { label: "₵ Cedi (GHS)", value: "Cedi" },
+      { label: "£ Pound (GBP)", value: "GBP" },
+      { label: "$ Dollar (USD)", value: "USD" },
+      { label: "₦ Naira (NGN)", value: "NGN" },
+      { label: "€ Euro (EUR)", value: "EUR" },
+      { label: "₵ Cedi (GHS)", value: "GHS" },
     ],
   },
 
