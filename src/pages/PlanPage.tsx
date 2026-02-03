@@ -60,7 +60,7 @@ const PlanPage = () => {
           <h2 className="text-xl font-bold text-gray-900 mb-2">Unable to Load Plan</h2>
           <p className="text-gray-500 mb-6">We couldn't retrieve the portfolio data. This usually happens if the page was refreshed.</p>
           <button 
-            onClick={() => navigate('/dashboard/questionnaire')}
+            onClick={() => navigate('/questionnaire')}
             className="w-full py-3 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800 transition-all"
           >
             Create New Plan

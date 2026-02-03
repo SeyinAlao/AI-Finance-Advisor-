@@ -2,11 +2,13 @@ import type { AIRequestPayload, AIResponse } from "../types";
 
 const API_URL = "https://robo-advisor-backend-service.onrender.com";
 
-const getToken = () => localStorage.getItem('token'); 
+const getToken = () => {
+  return localStorage.getItem('token') || sessionStorage.getItem('token');
+};
 
 export const generateAIPlan = async (payload: AIRequestPayload): Promise<AIResponse> => {
-  const token = localStorage.getItem('token');
-  
+  const token = getToken();
+
   const response = await fetch(`${API_URL}/ai/request`, {
     method: 'POST',
     headers: {
