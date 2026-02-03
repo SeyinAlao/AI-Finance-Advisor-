@@ -34,7 +34,7 @@ const PlanPage = () => {
 
   const rawPlan = location.state?.plan as PlanResponse | undefined;
   let assets: Asset[] = [];
-  let adviceText = "We have structured a diversified portfolio to balance your growth targets with risk management.";
+  let adviceText = "We have arranged a diversified portfolio to balance your growth targets with risk management.";
 
   if (rawPlan?.data) {
     if (Array.isArray(rawPlan.data)) {

@@ -6,22 +6,28 @@ import type { LoginRequest } from '../types';
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  
   const [formData, setFormData] = useState<LoginRequest>({ email: '', password: '' });
   const [status, setStatus] = useState({ type: '', message: '' });
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false); // so that if the person wants to store on like a local device
 
+  // the Mutation handles the api call for login
   const mutation = useMutation({
     mutationFn: loginUser,
     onSuccess: (data) => {
       console.log("Login Successful! Response Data:", data);
-
-      const token = data.token || data.token;
+      const token = data.token; // doesnt duplicate token
 
       if (token) {
-        localStorage.setItem('token', token);
-        localStorage.setItem('email', formData.email);
-        
+        // To Store in Local or Session storage?
+        if (rememberMe) {
+            localStorage.setItem('token', token);
+            localStorage.setItem('email', formData.email);
+        } else {
+            sessionStorage.setItem('token', token);
+            sessionStorage.setItem('email', formData.email);
+        }
+        setStatus({ type: 'success', message: 'Login successful! Redirecting...' });
         navigate('/dashboard');
       } else {
         setStatus({ type: 'error', message: 'Login succeeded but no token was received.' });
@@ -31,17 +37,17 @@ const LoginPage = () => {
       setStatus({ type: 'error', message: error.message });
     }
   });
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); // Stop page reload
     setStatus({ type: '', message: '' });
-    mutation.mutate(formData);
+    mutation.mutate(formData); // Fire the API call
   };
 
+  // 6. The UI (JSX)
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 font-sans">
       <div className="bg-white p-10 rounded-2xl shadow-xl w-full max-w-md">
@@ -53,6 +59,7 @@ const LoginPage = () => {
           Sign in or create an account to continue
         </p>
 
+        {/* Toggle Buttons (Visual Only) */}
         <div className="flex bg-gray-100 p-1 rounded-lg mb-8">
           <div className="flex-1 py-2 text-center text-sm font-semibold text-gray-900 bg-white rounded-md shadow-sm cursor-default">
             Sign In
@@ -66,6 +73,7 @@ const LoginPage = () => {
           </button>
         </div>
 
+        {/* Status Message (Error/Success) */}
         {status.message && (
           <div className={`mb-6 p-3 rounded-lg text-sm text-center ${
              status.type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
@@ -75,6 +83,7 @@ const LoginPage = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Email Input */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Email
@@ -86,6 +95,7 @@ const LoginPage = () => {
             />
           </div>
 
+          {/* Password Input */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Password
@@ -118,7 +128,22 @@ const LoginPage = () => {
             </div>
           </div>
 
-          <div className="text-right">
+          {/* Remember Me & Forgot Password */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <input
+                id="remember-me"
+                name="remember-me"
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded cursor-pointer"
+              />
+              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900 cursor-pointer select-none">
+                Remember me
+              </label>
+            </div>
+
             <button 
               type="button" 
               onClick={() => navigate('/forgot-password')}
@@ -128,6 +153,7 @@ const LoginPage = () => {
             </button>
           </div>
 
+          {/* Submit Button */}
           <button 
             type="submit" 
             disabled={mutation.isPending}

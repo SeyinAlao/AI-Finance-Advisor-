@@ -34,23 +34,16 @@ export const generateAIPlan = async (payload: AIRequestPayload): Promise<AIRespo
   return data;
 };
 
-export const fetchAIHistory = async (
-  page: number, 
-  limit: number, 
-  from?: string, 
-  to?: string
-) => {
-  const token = getToken(); 
+export const fetchAIHistory = async (page: number, limit: number, from?: string, to?: string) => {
+  const token = getToken();
 
-  // We use URLSearchParams to build the query string cleanly
   const params = new URLSearchParams();
   params.append('page', page.toString());
   params.append('limit', limit.toString());
-  
+
   if (from) params.append('from', from);
   if (to) params.append('to', to);
 
-  // Example result: /ai/fetch-response/date?page=1&limit=20&from=2023-01-01&to=2023-01-31
   const response = await fetch(`${API_URL}/ai/fetch-response/date?${params.toString()}`, {
     method: 'GET',
     headers: {
@@ -63,5 +56,13 @@ export const fetchAIHistory = async (
     throw new Error('Failed to fetch history');
   }
 
-  return response.json();
+  const result = await response.json();
+  
+  console.log("API RESPONSE:", result); 
+
+  if (Array.isArray(result)) return result;
+  if (result.data && Array.isArray(result.data)) return result.data;
+  if (result.history && Array.isArray(result.history)) return result.history;
+
+  return [];
 };

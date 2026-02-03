@@ -11,8 +11,9 @@ interface HistoryItem {
 }
 
 const HistoryPage = () => {
-  const [tempFromDate, setTempFromDate] = useState<Date | null>(null);
+  const [tempFromDate, setTempFromDate] = useState<Date | null>(null); // the null means it starts with no date present, and the type is either a Date object or null
   const [tempToDate, setTempToDate] = useState<Date | null>(null);
+
   const [appliedFilters, setAppliedFilters] = useState<{ from?: string; to?: string }>({});
 
   const { 
@@ -25,6 +26,7 @@ const HistoryPage = () => {
     queryFn: () => fetchAIHistory(1, 20, appliedFilters.from, appliedFilters.to),
     staleTime: 1000 * 60 * 5, 
   });
+  const historyList = Array.isArray(history) ? history : [];
 
   const handleApply = () => {
     const fromStr = tempFromDate ? tempFromDate.toISOString().split('T')[0] : undefined;
@@ -125,7 +127,7 @@ const HistoryPage = () => {
           </div>
         ) : (
           <div className="divide-y divide-gray-100">
-            {history.map((item: HistoryItem, index: number) => (
+            {historyList.map((item: HistoryItem, index: number) => (
               <div key={index} className="p-5 hover:bg-green-50/50 transition-colors flex justify-between items-center group cursor-pointer">
                 <div className="flex items-center gap-5">
                   <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center text-green-700 shadow-sm group-hover:scale-105 transition-transform">
