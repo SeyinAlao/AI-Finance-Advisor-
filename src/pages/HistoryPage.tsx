@@ -12,11 +12,21 @@ interface HistoryItem {
 
 const HistoryPage = () => {
   const [page, setPage] = useState(1);
-  const [limit] = useState(10); // Default to 10 data items per page
+  const [limit] = useState(10); 
 
-  const [tempFromDate, setTempFromDate] = useState<Date | null>(null); // Temporary state for "From" date
-  const [tempToDate, setTempToDate] = useState<Date | null>(null); // Temporary state for "To" date
+  const [tempFromDate, setTempFromDate] = useState<Date | null>(null);
+  const [tempToDate, setTempToDate] = useState<Date | null>(null);
+  
   const [appliedFilters, setAppliedFilters] = useState<{ from?: string; to?: string }>({}); 
+
+  const formatLocalDate = (date: Date | null) => {
+    if (!date) return undefined;
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const { 
     data: history = [], 
     isLoading, 
@@ -26,23 +36,21 @@ const HistoryPage = () => {
   } = useQuery({
     queryKey: ['aiHistory', page, limit, appliedFilters.from, appliedFilters.to], 
     
-    queryFn: () => fetchAIHistory(page, limit, appliedFilters.from, appliedFilters.to), // passing page and limit to the api
+    queryFn: () => {
+        console.log(" FETCHING HISTORY:", { page, limit, ...appliedFilters });
+        return fetchAIHistory(page, limit, appliedFilters.from, appliedFilters.to);
+    },
     
-    // This keeps the old data visible while fetching the new page (prevents flickering)
     placeholderData: keepPreviousData, 
   });
-  const historyList = Array.isArray(history) ? history : [];
 
-  const formatLocalDate = (date: Date | null) => {
-    if (!date) return undefined;
-    return date.toLocaleDateString('en-CA'); 
-  };
+  const historyList = Array.isArray(history) ? history : [];
 
   const handleApply = () => {
     const fromStr = formatLocalDate(tempFromDate);
     const toStr = formatLocalDate(tempToDate);
     
-    console.log("Filtering:", fromStr, "to", toStr);
+    console.log("User clicked Apply with:", fromStr, "to", toStr);
     
     setAppliedFilters({ from: fromStr, to: toStr });
     setPage(1); 
@@ -52,21 +60,22 @@ const HistoryPage = () => {
     setTempFromDate(null);
     setTempToDate(null);
     setAppliedFilters({});
-    setPage(1); // When you clear it reset to page 1
+    setPage(1); 
   };
 
   const handlePreviousPage = () => {
-    setPage((old) => Math.max(old - 1, 1)); // this tells the page to never go below 1 
+    setPage((old) => Math.max(old - 1, 1)); 
   };
 
   const handleNextPage = () => {
     if (!isPlaceholderData && historyList.length === limit) {
-       setPage((old) => old + 1); // It goes to the next page only if we have a full page of results 
+       setPage((old) => old + 1); 
     }
   };
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 p-4 md:p-8">
+ 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Plan History</h1>
@@ -122,6 +131,7 @@ const HistoryPage = () => {
           </div>
         </div>
       </div>
+
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden min-h-[400px] flex flex-col">
         <div className="flex-grow">
           {isLoading ? (
@@ -176,6 +186,7 @@ const HistoryPage = () => {
             </div>
           )}
         </div>
+
         {(historyList.length > 0 || page > 1) && !isLoading && !isError && (
           <div className="bg-gray-50 border-t border-gray-200 p-4 flex items-center justify-between">
             <span className="text-sm text-gray-500 pl-2">
@@ -194,7 +205,6 @@ const HistoryPage = () => {
               
               <button
                 onClick={handleNextPage}
-                // It Disable next if we didn't get a full page of results (meaning we reached the end)
                 disabled={historyList.length < limit || isPlaceholderData}
                 className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
