@@ -19,7 +19,7 @@ const LoginPage = () => {
       const token = data.token; // doesnt duplicate token
 
       if (token) {
-        // To Store in Local or Session storage?
+        // To Store in Local storage if its like a personal device the session if you dont want to save the info for security 
         if (rememberMe) {
             localStorage.setItem('token', token);
             localStorage.setItem('email', formData.email);
@@ -42,12 +42,11 @@ const LoginPage = () => {
   };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault(); // Stop page reload
+    e.preventDefault(); // This prevents the page from reloading
     setStatus({ type: '', message: '' });
-    mutation.mutate(formData); // Fire the API call
+    mutation.mutate(formData); // This triggers the API call
   };
 
-  // 6. The UI (JSX)
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 font-sans">
       <div className="bg-white p-10 rounded-2xl shadow-xl w-full max-w-md">
@@ -59,7 +58,6 @@ const LoginPage = () => {
           Sign in or create an account to continue
         </p>
 
-        {/* Toggle Buttons (Visual Only) */}
         <div className="flex bg-gray-100 p-1 rounded-lg mb-8">
           <div className="flex-1 py-2 text-center text-sm font-semibold text-gray-900 bg-white rounded-md shadow-sm cursor-default">
             Sign In
@@ -72,8 +70,6 @@ const LoginPage = () => {
             Sign Up
           </button>
         </div>
-
-        {/* Status Message (Error/Success) */}
         {status.message && (
           <div className={`mb-6 p-3 rounded-lg text-sm text-center ${
              status.type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
@@ -83,7 +79,6 @@ const LoginPage = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Email Input */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Email
@@ -95,7 +90,6 @@ const LoginPage = () => {
             />
           </div>
 
-          {/* Password Input */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Password
@@ -127,8 +121,6 @@ const LoginPage = () => {
               </button>
             </div>
           </div>
-
-          {/* Remember Me & Forgot Password */}
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <input
@@ -152,8 +144,6 @@ const LoginPage = () => {
               Forgot Password?
             </button>
           </div>
-
-          {/* Submit Button */}
           <button 
             type="submit" 
             disabled={mutation.isPending}

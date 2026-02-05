@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query'; 
+import { useQuery, keepPreviousData } from '@tanstack/react-query'; 
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css"; 
-import { Calendar, Search, FileText, Filter, X } from 'lucide-react';
+import { Calendar, Search, FileText, Filter, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { fetchAIHistory } from '../api/ai';
 
 interface HistoryItem {
@@ -11,39 +11,62 @@ interface HistoryItem {
 }
 
 const HistoryPage = () => {
-  const [tempFromDate, setTempFromDate] = useState<Date | null>(null); // the null means it starts with no date present, and the type is either a Date object or null
-  const [tempToDate, setTempToDate] = useState<Date | null>(null);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10); // Default to 10 data items per page
 
-  const [appliedFilters, setAppliedFilters] = useState<{ from?: string; to?: string }>({});
-
+  const [tempFromDate, setTempFromDate] = useState<Date | null>(null); // Temporary state for "From" date
+  const [tempToDate, setTempToDate] = useState<Date | null>(null); // Temporary state for "To" date
+  const [appliedFilters, setAppliedFilters] = useState<{ from?: string; to?: string }>({}); 
   const { 
     data: history = [], 
     isLoading, 
     isError,
-    refetch 
+    refetch,
+    isPlaceholderData 
   } = useQuery({
-    queryKey: ['aiHistory', appliedFilters.from, appliedFilters.to], 
-    queryFn: () => fetchAIHistory(1, 20, appliedFilters.from, appliedFilters.to),
-    staleTime: 1000 * 60 * 5, 
+    queryKey: ['aiHistory', page, limit, appliedFilters.from, appliedFilters.to], 
+    
+    queryFn: () => fetchAIHistory(page, limit, appliedFilters.from, appliedFilters.to), // passing page and limit to the api
+    
+    // This keeps the old data visible while fetching the new page (prevents flickering)
+    placeholderData: keepPreviousData, 
   });
   const historyList = Array.isArray(history) ? history : [];
 
+  const formatLocalDate = (date: Date | null) => {
+    if (!date) return undefined;
+    return date.toLocaleDateString('en-CA'); 
+  };
+
   const handleApply = () => {
-    const fromStr = tempFromDate ? tempFromDate.toISOString().split('T')[0] : undefined;
-    const toStr = tempToDate ? tempToDate.toISOString().split('T')[0] : undefined;
+    const fromStr = formatLocalDate(tempFromDate);
+    const toStr = formatLocalDate(tempToDate);
+    
+    console.log("Filtering:", fromStr, "to", toStr);
     
     setAppliedFilters({ from: fromStr, to: toStr });
+    setPage(1); 
   };
 
   const clearFilters = () => {
     setTempFromDate(null);
     setTempToDate(null);
     setAppliedFilters({});
+    setPage(1); // When you clear it reset to page 1
+  };
+
+  const handlePreviousPage = () => {
+    setPage((old) => Math.max(old - 1, 1)); // this tells the page to never go below 1 
+  };
+
+  const handleNextPage = () => {
+    if (!isPlaceholderData && historyList.length === limit) {
+       setPage((old) => old + 1); // It goes to the next page only if we have a full page of results 
+    }
   };
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 p-4 md:p-8">
- 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Plan History</h1>
@@ -51,7 +74,6 @@ const HistoryPage = () => {
         </div>
 
         <div className="flex flex-col sm:flex-row items-end gap-3 bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
-          
           <div className="relative">
             <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 ml-1">From</label>
             <div className="relative">
@@ -65,7 +87,6 @@ const HistoryPage = () => {
               <Calendar className="absolute left-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
             </div>
           </div>
-
           <div className="relative">
              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 ml-1">To</label>
              <div className="relative">
@@ -80,7 +101,6 @@ const HistoryPage = () => {
               <Calendar className="absolute left-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
             </div>
           </div>
-
           <div className="flex gap-2">
             <button 
                 onClick={handleApply}
@@ -102,56 +122,86 @@ const HistoryPage = () => {
           </div>
         </div>
       </div>
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden min-h-[400px]">
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center h-64 text-gray-500">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700 mb-3"></div>
-            <span className="text-sm font-medium">Retrieving records...</span>
-          </div>
-        ) : isError ? (
-            <div className="flex flex-col items-center justify-center h-64 text-red-500">
-                <p className="font-semibold">Failed to load history</p>
-                <button onClick={() => refetch()} className="text-sm underline mt-2">Try Again</button>
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden min-h-[400px] flex flex-col">
+        <div className="flex-grow">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center h-64 text-gray-500">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700 mb-3"></div>
+              <span className="text-sm font-medium">Retrieving records...</span>
             </div>
-        ) : history.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-80 text-center p-6">
-            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-              <Search className="w-8 h-8 text-gray-300" />
-            </div>
-            <h3 className="text-gray-900 font-bold text-lg mb-1">No plans found</h3>
-            <p className="text-gray-500 text-sm max-w-xs mx-auto">
-              {(appliedFilters.from || appliedFilters.to) 
-                ? "We couldn't find any plans within that date range. Try adjusting your filters." 
-                : "You haven't generated any investment plans yet."}
-            </p>
-          </div>
-        ) : (
-          <div className="divide-y divide-gray-100">
-            {historyList.map((item: HistoryItem, index: number) => (
-              <div key={index} className="p-5 hover:bg-green-50/50 transition-colors flex justify-between items-center group cursor-pointer">
-                <div className="flex items-center gap-5">
-                  <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center text-green-700 shadow-sm group-hover:scale-105 transition-transform">
-                    <FileText className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h4 className="text-base font-bold text-gray-900">
-                      Investment Strategy #{item.id || index + 1}
-                    </h4>
-                    <p className="text-xs text-gray-500 font-medium mt-1 flex items-center gap-2">
-                       <Calendar className="w-3 h-3" />
-                       {item.created_at ? new Date(item.created_at).toLocaleDateString(undefined, {
-                           year: 'numeric', month: 'long', day: 'numeric'
-                       }) : 'Date N/A'}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                     <span className="text-xs font-bold text-green-700 bg-green-100 border border-green-200 px-3 py-1 rounded-full uppercase tracking-wide">
-                        Success
-                    </span>
-                </div>
+          ) : isError ? (
+              <div className="flex flex-col items-center justify-center h-64 text-red-500">
+                  <p className="font-semibold">Failed to load history</p>
+                  <button onClick={() => refetch()} className="text-sm underline mt-2">Try Again</button>
               </div>
-            ))}
+          ) : historyList.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-80 text-center p-6">
+              <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                <Search className="w-8 h-8 text-gray-300" />
+              </div>
+              <h3 className="text-gray-900 font-bold text-lg mb-1">No plans found</h3>
+              <p className="text-gray-500 text-sm max-w-xs mx-auto">
+                {(appliedFilters.from || appliedFilters.to) 
+                  ? "We couldn't find any plans within that date range." 
+                  : "You haven't generated any investment plans yet."}
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-100">
+              {historyList.map((item: HistoryItem, index: number) => (
+                <div key={index} className="p-5 hover:bg-green-50/50 transition-colors flex justify-between items-center group cursor-pointer">
+                  <div className="flex items-center gap-5">
+                    <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center text-green-700 shadow-sm group-hover:scale-105 transition-transform">
+                      <FileText className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h4 className="text-base font-bold text-gray-900">
+                        Investment Strategy #{item.id || index + 1}
+                      </h4>
+                      <p className="text-xs text-gray-500 font-medium mt-1 flex items-center gap-2">
+                         <Calendar className="w-3 h-3" />
+                         {item.created_at ? new Date(item.created_at).toLocaleDateString(undefined, {
+                            year: 'numeric', month: 'long', day: 'numeric'
+                         }) : 'Date N/A'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                      <span className="text-xs font-bold text-green-700 bg-green-100 border border-green-200 px-3 py-1 rounded-full uppercase tracking-wide">
+                        Success
+                      </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        {(historyList.length > 0 || page > 1) && !isLoading && !isError && (
+          <div className="bg-gray-50 border-t border-gray-200 p-4 flex items-center justify-between">
+            <span className="text-sm text-gray-500 pl-2">
+              Page <span className="font-semibold text-gray-900">{page}</span>
+            </span>
+            
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handlePreviousPage}
+                disabled={page === 1}
+                className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Previous
+              </button>
+              
+              <button
+                onClick={handleNextPage}
+                // It Disable next if we didn't get a full page of results (meaning we reached the end)
+                disabled={historyList.length < limit || isPlaceholderData}
+                className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Next
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         )}
       </div>
