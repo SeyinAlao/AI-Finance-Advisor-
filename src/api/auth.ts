@@ -117,17 +117,25 @@ export const logoutUser = async () => {
     window.location.href = '/login';
   }
 };
-
-export const changePassword = async (passwords: ChangePasswordRequest) => {
+export const changePassword = async (data: ChangePasswordRequest) => {
   const response = await fetch(`${API_URL}/auth/change-password`, {
     method: "POST",
-    headers: getAuthHeaders(), 
-    body: JSON.stringify(passwords),
+    headers: {
+      'accept': 'application/json',
+      'Content-Type': "application/json",
+    },
+    body: JSON.stringify(data),
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || 'Failed to change password');
+    const errorText = await response.text(); 
+    try {
+      const errorJson = JSON.parse(errorText);
+      throw new Error(errorJson.message || 'Validation failed. Check your token.');
+    } catch {
+      throw new Error('Server error: The token might be invalid or expired.');
+    }
   }
+
   return response.json();
 };

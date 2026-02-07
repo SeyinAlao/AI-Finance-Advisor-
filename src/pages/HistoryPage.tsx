@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, keepPreviousData } from '@tanstack/react-query'; 
+import { useQuery,  } from '@tanstack/react-query'; 
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css"; 
 import { Calendar, Search, FileText, Filter, X, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -12,7 +12,7 @@ interface HistoryItem {
 
 const HistoryPage = () => {
   const [page, setPage] = useState(1);
-  const [limit] = useState(10); 
+  const limit = 10; 
 
   const [tempFromDate, setTempFromDate] = useState<Date | null>(null);
   const [tempToDate, setTempToDate] = useState<Date | null>(null);
@@ -22,14 +22,15 @@ const HistoryPage = () => {
   const formatLocalDate = (date: Date | null) => {
     if (!date) return undefined;
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+    const month = String(date.getMonth() + 1).padStart(2, '0'); 
     const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return `${day}-${month}-${year}`;
   };
 
   const { 
-    data: history = [], 
+    data: history, 
     isLoading, 
+
     isError,
     refetch,
     isPlaceholderData 
@@ -41,7 +42,7 @@ const HistoryPage = () => {
         return fetchAIHistory(page, limit, appliedFilters.from, appliedFilters.to);
     },
     
-    placeholderData: keepPreviousData, 
+    // placeholderData: keepPreviousData, 
   });
 
   const historyList = Array.isArray(history) ? history : [];
@@ -91,7 +92,7 @@ const HistoryPage = () => {
                 onChange={(date: Date | null) => setTempFromDate(date)} 
                 className="pl-9 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 outline-none w-32 text-sm font-medium text-gray-700"
                 placeholderText="Start Date"
-                dateFormat="yyyy-MM-dd"
+                dateFormat="dd-MM-yyyy"
               />
               <Calendar className="absolute left-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
             </div>
@@ -104,7 +105,7 @@ const HistoryPage = () => {
                 onChange={(date: Date | null) => setTempToDate(date)} 
                 className="pl-9 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 outline-none w-32 text-sm font-medium text-gray-700"
                 placeholderText="End Date"
-                dateFormat="yyyy-MM-dd"
+                dateFormat="dd-MM-yyyy"
                 minDate={tempFromDate || undefined} 
               />
               <Calendar className="absolute left-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
@@ -158,7 +159,7 @@ const HistoryPage = () => {
             </div>
           ) : (
             <div className="divide-y divide-gray-100">
-              {historyList.map((item: HistoryItem, index: number) => (
+              {historyList.map((item: HistoryItem, index: number) => (  
                 <div key={index} className="p-5 hover:bg-green-50/50 transition-colors flex justify-between items-center group cursor-pointer">
                   <div className="flex items-center gap-5">
                     <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center text-green-700 shadow-sm group-hover:scale-105 transition-transform">
@@ -205,7 +206,7 @@ const HistoryPage = () => {
               
               <button
                 onClick={handleNextPage}
-                disabled={historyList.length < limit || isPlaceholderData}
+                disabled={historyList.length < limit}
                 className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Next
