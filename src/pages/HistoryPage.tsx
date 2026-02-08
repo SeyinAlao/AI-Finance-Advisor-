@@ -1,8 +1,17 @@
 import { useState } from 'react';
-import { useQuery,  } from '@tanstack/react-query'; 
+import { useQuery } from '@tanstack/react-query'; 
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css"; 
-import { Calendar, Search, FileText, Filter, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { 
+  Calendar, 
+  Search, 
+  FileText, 
+  Filter, 
+  X, 
+  ChevronLeft, 
+  ChevronRight, 
+  AlertCircle 
+} from 'lucide-react';
 import { fetchAIHistory } from '../api/ai';
 
 interface HistoryItem {
@@ -27,22 +36,18 @@ const HistoryPage = () => {
     return `${day}-${month}-${year}`;
   };
 
+  // Destructuring 'error' to use real backend error messages as requested
   const { 
     data: history, 
     isLoading, 
-
     isError,
+    error, 
     refetch,
     isPlaceholderData 
   } = useQuery({
     queryKey: ['aiHistory', page, limit, appliedFilters.from, appliedFilters.to], 
-    
-    queryFn: () => {
-        console.log(" FETCHING HISTORY:", { page, limit, ...appliedFilters });
-        return fetchAIHistory(page, limit, appliedFilters.from, appliedFilters.to);
-    },
-    
-    // placeholderData: keepPreviousData, 
+    queryFn: () => fetchAIHistory(page, limit, appliedFilters.from, appliedFilters.to),
+    retry: 1, // Limited retries to surface errors faster
   });
 
   const historyList = Array.isArray(history) ? history : [];
@@ -50,9 +55,6 @@ const HistoryPage = () => {
   const handleApply = () => {
     const fromStr = formatLocalDate(tempFromDate);
     const toStr = formatLocalDate(tempToDate);
-    
-    console.log("User clicked Apply with:", fromStr, "to", toStr);
-    
     setAppliedFilters({ from: fromStr, to: toStr });
     setPage(1); 
   };
@@ -76,13 +78,14 @@ const HistoryPage = () => {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 p-4 md:p-8">
- 
+      {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Plan History</h1>
           <p className="text-gray-500 text-sm mt-1">Review your past generated investment strategies.</p>
         </div>
 
+        {/* Filter Bar */}
         <div className="flex flex-col sm:flex-row items-end gap-3 bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
           <div className="relative">
             <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 ml-1">From</label>
@@ -133,6 +136,7 @@ const HistoryPage = () => {
         </div>
       </div>
 
+      {/* Main Content Area */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden min-h-[400px] flex flex-col">
         <div className="flex-grow">
           {isLoading ? (
@@ -141,10 +145,22 @@ const HistoryPage = () => {
               <span className="text-sm font-medium">Retrieving records...</span>
             </div>
           ) : isError ? (
-              <div className="flex flex-col items-center justify-center h-64 text-red-500">
-                  <p className="font-semibold">Failed to load history</p>
-                  <button onClick={() => refetch()} className="text-sm underline mt-2">Try Again</button>
+            // Using real backend error message here
+            <div className="flex flex-col items-center justify-center h-64 text-center px-6">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                <AlertCircle className="w-6 h-6 text-red-600" />
               </div>
+              <h3 className="text-gray-900 font-bold text-lg mb-1">Request Failed</h3>
+              <p className="text-red-500 text-sm max-w-xs mx-auto mb-4">
+                {(error as Error)?.message || "The server could not process your request. Please try again later."}
+              </p>
+              <button 
+                onClick={() => refetch()} 
+                className="px-6 py-2 bg-gray-900 text-white text-sm font-bold rounded-lg hover:bg-gray-800 transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
           ) : historyList.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-80 text-center p-6">
               <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
@@ -188,6 +204,7 @@ const HistoryPage = () => {
           )}
         </div>
 
+        {/* Pagination Controls */}
         {(historyList.length > 0 || page > 1) && !isLoading && !isError && (
           <div className="bg-gray-50 border-t border-gray-200 p-4 flex items-center justify-between">
             <span className="text-sm text-gray-500 pl-2">
