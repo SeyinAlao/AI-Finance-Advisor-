@@ -36,12 +36,11 @@ const HistoryPage = () => {
     return `${day}-${month}-${year}`;
   };
 
-  // Destructuring 'error' to use real backend error messages as requested
   const { 
     data: history, 
     isLoading, 
     isError,
-    error, 
+    error, // specific reason for failing 
     refetch,
     isPlaceholderData 
   } = useQuery({
@@ -78,14 +77,11 @@ const HistoryPage = () => {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 p-4 md:p-8">
-      {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Plan History</h1>
           <p className="text-gray-500 text-sm mt-1">Review your past generated investment strategies.</p>
         </div>
-
-        {/* Filter Bar */}
         <div className="flex flex-col sm:flex-row items-end gap-3 bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
           <div className="relative">
             <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 ml-1">From</label>
@@ -136,7 +132,6 @@ const HistoryPage = () => {
         </div>
       </div>
 
-      {/* Main Content Area */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden min-h-[400px] flex flex-col">
         <div className="flex-grow">
           {isLoading ? (
@@ -145,7 +140,6 @@ const HistoryPage = () => {
               <span className="text-sm font-medium">Retrieving records...</span>
             </div>
           ) : isError ? (
-            // Using real backend error message here
             <div className="flex flex-col items-center justify-center h-64 text-center px-6">
               <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
                 <AlertCircle className="w-6 h-6 text-red-600" />
@@ -204,7 +198,6 @@ const HistoryPage = () => {
           )}
         </div>
 
-        {/* Pagination Controls */}
         {(historyList.length > 0 || page > 1) && !isLoading && !isError && (
           <div className="bg-gray-50 border-t border-gray-200 p-4 flex items-center justify-between">
             <span className="text-sm text-gray-500 pl-2">
