@@ -1,100 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
-
-import { FormQuestionsData } from '../data/question';
-import { generateAIPlan } from '../api/ai';
-import type { Option, AIRequestPayload } from '../types';
+import { useQuestionPageAction } from '../hooks/useQuestionPageAction';
+import type { Option } from '../types';
 
 const QuestionPage = () => {
-  const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(0);
-  const [error, setError] = useState('');
-
-  const [formData, setFormData] = useState<Record<string, string>>(() => { //html input returns strings
-    const saved = sessionStorage.getItem('questionnaire_progress');
-    return saved ? JSON.parse(saved) : {
-        age: '',
-        investmentPurpose: '',
-        investmentHorizon: '',
-        investmentKnowledge: '',
-        riskTolerance: '',
-        amount: '',
-        currency: '',
-        location: '',
-    };
-  });
-
-  useEffect(() => {
-    sessionStorage.setItem('questionnaire_progress', JSON.stringify(formData));
-  }, [formData]);
-
-  const mutation = useMutation({
-    mutationFn: generateAIPlan,
-    onSuccess: (data) => {
-      sessionStorage.removeItem('questionnaire_progress'); 
-      sessionStorage.setItem('ai_result', JSON.stringify(data)); 
-      navigate('/dashboard/plan', { state: { plan: data } }); 
-    },
-    onError: (err: Error) => {
-      console.error("Plan Generation Error:", err);
-      setError(err.message || 'Failed to generate plan. Please checks your inputs.');
-    }
-  });
-
-  const currentQuestion = FormQuestionsData[currentStep];
-  const isLastStep = currentStep === FormQuestionsData.length - 1;
-  const progressPercentage = ((currentStep + 1) / FormQuestionsData.length) * 100;
-
-  const handleOptionSelect = (value: string) => {
-    setFormData((prev) => ({ ...prev, [currentQuestion.name]: value }));
-  };
-
-  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({ ...prev, [currentQuestion.name]: e.target.value }));
-  };
-
-  const handleNext = () => {
-    if (!formData[currentQuestion.name]) {
-      setError('Please answer the question to proceed.');
-      return;
-    }
-    setError('');
-
-    if (isLastStep) {
-      handleSubmit();
-    } else {
-      setCurrentStep((prev) => prev + 1);
-    }
-  };
-
-  const handleBack = () => {
-    setError('');
-    if (currentStep > 0) {
-      setCurrentStep((prev) => prev - 1);
-    }
-  };
-
-  const handleSubmit = () => {
-    try {
-      const payload: AIRequestPayload = {
-          age: Number(formData.age),                  
-          investmentPurpose: formData.investmentPurpose,
-          investmentHorizon: Number(formData.investmentHorizon), 
-          investmentKnowledge: formData.investmentKnowledge,
-          riskTolerance: formData.riskTolerance,
-          amount: Number(formData.amount),           
-          currency: formData.currency,
-          location: formData.location || "Lagos"    
-      };
-      console.log("Sending Payload to API:", payload);
-
-      mutation.mutate(payload);
-    } catch {
-      setError("Please ensure all number fields (Age, Amount) are valid numbers.");
-    }
-  };
+  const {
+    currentStep,
+    formData,
+    error,
+    currentQuestion,
+    isLastStep,
+    progressPercentage,
+    FormQuestionsData,
+    handleOptionSelect,
+    handleTextChange,
+    mutation,
+    handleNext,
+    handleBack,
+  } = useQuestionPageAction();
 
   const renderInput = () => {
     const isTextInput = currentQuestion.options.length === 1 && currentQuestion.options[0].value === "";
