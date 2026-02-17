@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { loginUser } from "../api/auth";
 import type { LoginRequest } from "../types";
+import * as Yup from "yup";
+import { loginSchema } from "../utils/validation";
 
-export const useLoginAction = () => {
+export const useLoginAction = () => {     // remember useform is for form handling and validation, useLoginAction is for login logic and state management.
   const navigate = useNavigate();
   const [formData, setFormData] = useState<LoginRequest>({
     email: "",
@@ -12,17 +14,15 @@ export const useLoginAction = () => {
   });
   const [status, setStatus] = useState({ type: "", message: "" });
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false); // so that if the person wants to store on like a local device
+  const [rememberMe, setRememberMe] = useState(false);
 
-  // the Mutation handles the api call for login
   const mutation = useMutation({
     mutationFn: loginUser,
     onSuccess: (data) => {
       console.log("Login Successful! Response Data:", data);
-      const token = data.token; // doesnt duplicate token
+      const token = data.token;
 
       if (token) {
-        // To Store in Local storage if its like a personal device the session if you dont want to save the info for security
         if (rememberMe) {
           localStorage.setItem("token", token);
           localStorage.setItem("email", formData.email);
@@ -46,15 +46,27 @@ export const useLoginAction = () => {
       setStatus({ type: "error", message: error.message });
     },
   });
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Make an async function
+  // 2. Modified handleSubmit to include the Yup check
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); // This prevents the page from reloading
+    e.preventDefault();
     setStatus({ type: "", message: "" });
-    await mutation.mutateAsync(formData); // This triggers the API call
+
+    try {
+      await loginSchema.validate(formData, { abortEarly: false });
+      await mutation.mutateAsync(formData);
+
+    } catch (err: unknown) {
+      if (err instanceof Yup.ValidationError) {
+        setStatus({ type: "error", message: err.inner[0].message });
+      } else {
+        setStatus({ type: "error", message: "An unexpected error occurred" });
+      }
+    }
   };
 
   return {

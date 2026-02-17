@@ -91,3 +91,8 @@ export interface UpdateProfileRequest {
   last_name?: string;
   username?: string;
 }
+
+export interface HistoryItem {
+  id?: string | number;
+  created_at?: string;
+}

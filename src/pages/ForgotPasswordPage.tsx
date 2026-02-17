@@ -4,8 +4,7 @@ import { useForgotPasswordAction } from "../hooks/useForgotPasswordAction";
 
 const ForgotPasswordPage = () => {
   const navigate = useNavigate();
-  const { email, setEmail, status, handleSubmit, mutation } =
-    useForgotPasswordAction();
+  const { email, setEmail, status, handleSubmit, mutation } = useForgotPasswordAction();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 font-sans p-4">

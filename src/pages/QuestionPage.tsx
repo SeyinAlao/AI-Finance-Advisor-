@@ -100,7 +100,7 @@ const QuestionPage = () => {
         </h2>
 
         <div className="mb-10">
-          {renderInput()}
+          {renderInput()} 
         </div>
 
         {error && (

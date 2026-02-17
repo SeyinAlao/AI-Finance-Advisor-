@@ -4,6 +4,8 @@ import { useMutation } from "@tanstack/react-query";
 import {useState} from "react"   
 import { useNavigate } from "react-router-dom";
 import type React from "react";
+import * as Yup from "yup";
+import { signupSchema } from "../utils/validation";
 
 export const useSignupAction = () => {
        const navigate = useNavigate();
@@ -54,7 +56,16 @@ export const useSignupAction = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setStatus({ type: '', message: '' });
-        await signupMutation.mutateAsync(formData);
+        try {
+            await signupSchema.validate(formData, { abortEarly: false });
+            await signupMutation.mutateAsync(formData);
+        } catch (error) {
+            if (error instanceof Yup.ValidationError) {
+                // This joins all errors found into one long sentence
+                const allErrors = error.inner.map(err => err.message).join(" | ");
+                setStatus({ type: 'error', message: allErrors });
+            }
+        }
     };
     return {
         status,
@@ -63,5 +74,6 @@ export const useSignupAction = () => {
         handleChange,
         handleSubmit,
         formData,
+        signupMutation,
     };
 }

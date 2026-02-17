@@ -1,7 +1,6 @@
 import { User, Lock, Save, Loader2, ShieldCheck } from 'lucide-react';
 import { useSettingsPageAction } from '../hooks/useSettingsPageAction';
 
-
 const SettingsPage = () => {
   const { isResetting, userEmail, passwords, message, isLoading, handleChange, handleSave } = useSettingsPageAction();
 

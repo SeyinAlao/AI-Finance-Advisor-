@@ -11,11 +11,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useHistoryPageAction } from "../hooks/useHistoryPageAction";
-
-interface HistoryItem {
-  id?: string | number;
-  created_at?: string;
-}
+import type { HistoryItem } from "../types";
 
 const HistoryPage = () => {
   const {

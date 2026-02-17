@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { usePlanPageAction } from '../hooks/usePlanPageAction';
 
-const CHART_COLORS = ['#059669', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0'];
+const CHART_COLORS = ['#059669', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0']; // create a folder called utility and put this in a file called chartColors.ts and export it from there so it can be used across the app for consistent coloring in charts.
 
 const PlanPage = () => {
    const { assets, adviceText, totalPrincipal, totalEstReturn, roiPercentage, navigate, } = usePlanPageAction();
