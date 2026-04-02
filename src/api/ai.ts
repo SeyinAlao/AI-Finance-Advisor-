@@ -1,6 +1,6 @@
 import type { AIRequestPayload, AIResponse } from "../types";
 
-const API_URL = "https://robo-advisor-backend-service.onrender.com";
+const API_URL = import.meta.env.DEV ? "" : "https://advisor-blush.vercel.app";
 
 const getToken = () => {
   return localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -9,7 +9,13 @@ const getToken = () => {
 export const generateAIPlan = async (payload: AIRequestPayload): Promise<AIResponse> => {
   const token = getToken();
 
-  const response = await fetch(`${API_URL}/ai/request`, {
+  console.log("DEBUG - Token being sent to AI:", token);
+
+  if (!token || token === "undefined" || token === "null") {
+    throw new Error("You are missing a token! Please log out and log back in to get a fresh one.");
+  }
+
+  const response = await fetch(`${API_URL}/api/ai/request`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -46,7 +52,7 @@ export const fetchAIHistory = async (page: number, limit: number, from?: string,
   if (from) params.append('from', from);
   if (to) params.append('to', to);
 
-  const response = await fetch(`${API_URL}/ai/fetch-response/date?${params.toString()}`, {
+  const response = await fetch(`${API_URL}/api/ai/response?${params.toString()}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -63,8 +69,15 @@ export const fetchAIHistory = async (page: number, limit: number, from?: string,
   console.log("API RESPONSE:", result); 
 
   if (Array.isArray(result)) return result;
+  
   if (result.data && Array.isArray(result.data)) return result.data;
   if (result.history && Array.isArray(result.history)) return result.history;
+
+  if (result.response) {
+    if (Array.isArray(result.response)) return result.response;
+    if (result.response.data && Array.isArray(result.response.data)) return result.response.data;
+    if (result.response.history && Array.isArray(result.response.history)) return result.response.history;
+  }
 
   return [];
 };

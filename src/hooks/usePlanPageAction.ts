@@ -12,11 +12,13 @@ export interface Asset {
 }
 
 interface PlanResponse {
-  status: string;
-  data: Asset[] | { 
-    investmentAdvice?: string; 
-    holdings?: Asset[];
-    portfolio?: Asset[];
+  success: boolean;
+  response: {
+    message: string;
+    id?: number;
+    data: {
+      recommendations: Asset[];
+    };
   };
 }
 
@@ -29,14 +31,11 @@ export const usePlanPageAction = () => {
   let assets: Asset[] = [];
   let adviceText = "We have arranged a diversified portfolio to balance your growth targets with risk management.";
 
-  if (rawPlan?.data) {
-    if (Array.isArray(rawPlan.data)) {
-      assets = rawPlan.data;
-    } else {
-      assets = rawPlan.data.holdings || rawPlan.data.portfolio || [];
-      if (rawPlan.data.investmentAdvice) {
-        adviceText = rawPlan.data.investmentAdvice;
-      }
+  if (rawPlan?.response?.data?.recommendations) {
+    assets = rawPlan.response.data.recommendations;
+    
+    if (rawPlan.response.message) {
+      adviceText = rawPlan.response.message;
     }
   }
 

@@ -26,7 +26,7 @@ export const useHistoryPageAction = () => {
     data: history,
     isLoading,
     isError,
-    error, // specific reason for failing
+    error,
     refetch,
     isPlaceholderData,
   } = useQuery({
@@ -39,7 +39,7 @@ export const useHistoryPageAction = () => {
     ],
     queryFn: () =>
       fetchAIHistory(page, limit, appliedFilters.from, appliedFilters.to),
-    retry: 1, // Limited retries to surface errors faster
+    retry: 1, 
   });
 
   const historyList = Array.isArray(history) ? history : [];

@@ -1,6 +1,6 @@
 import type { LoginRequest,LoginResponse, SignupRequest, SignupResponse, ChangePasswordRequest, PasswordResetRequest, ConfirmSignupRequest } from "../types";
 
-const API_URL = "https://robo-advisor-backend-service.onrender.com"
+const API_URL = import.meta.env.DEV ? "" : "https://advisor-blush.vercel.app";
 
 const getAuthHeaders = () => {
   const token = sessionStorage.getItem('token');
@@ -11,7 +11,7 @@ const getAuthHeaders = () => {
 };
 
 export const signupUser = async (userData: SignupRequest): Promise<SignupResponse> => {
-  const response = await fetch(`${API_URL}/auth/signup`, {
+  const response = await fetch(`${API_URL}/api/auth/signup`, {
     method: "POST",
     headers: {
       'accept': 'application/json',
@@ -35,7 +35,7 @@ export const signupUser = async (userData: SignupRequest): Promise<SignupRespons
 };
 
 export const confirmUser = async (data: ConfirmSignupRequest) => {
-  const response = await fetch(`${API_URL}/auth/signup/confirm`, {
+  const response = await fetch(`${API_URL}/api/auth/confirm-signup`, {
     method: "POST",
     headers: {
       'accept': 'application/json',
@@ -53,7 +53,7 @@ export const confirmUser = async (data: ConfirmSignupRequest) => {
 };
 
 export const loginUser = async (Credentials: LoginRequest): Promise<LoginResponse> => {
-  const response = await fetch(`${API_URL}/auth/login`,{
+  const response = await fetch(`${API_URL}/api/auth/login`,{
     method: "POST",
     headers: {
       'accept': 'application/json',
@@ -63,15 +63,30 @@ export const loginUser = async (Credentials: LoginRequest): Promise<LoginRespons
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || errorData.detail || 'Login failed');
+    let errorMessage = 'Login failed';
+    try {
+        const errorData = await response.json();
+        console.log("🔥 THE SECRET ERROR IS:", JSON.stringify(errorData, null, 2));
+
+        if (errorData.errors?.fieldErrors) {
+            const firstFailedField = Object.keys(errorData.errors.fieldErrors)[0];
+            const fieldErrorMessage = errorData.errors.fieldErrors[firstFailedField][0];
+            errorMessage = `${firstFailedField}: ${fieldErrorMessage}`;
+        } else {
+            errorMessage = errorData.error || errorData.detail || errorData.message || JSON.stringify(errorData);
+        }
+    } catch {
+        errorMessage = `Status: ${response.status}`;
+    }
+    
+    throw new Error(errorMessage);
   }
 
   return response.json();
 }
 
 export const requestPasswordReset = async (Credentials: PasswordResetRequest): Promise<{ message: string }> => {
-  const response = await fetch(`${API_URL}/auth/password-reset`, {
+  const response = await fetch(`${API_URL}/api/auth/password-reset`, {
     method: "POST",
     headers: {
       'accept': 'application/json',
@@ -90,7 +105,7 @@ export const requestPasswordReset = async (Credentials: PasswordResetRequest): P
 
 
 export const resendVerificationLink = async (email: { email: string }) => {
-  const response = await fetch(`${API_URL}/auth/resend-link`, {
+  const response = await fetch(`${API_URL}/api/auth/resend-link`, {
     method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(email)
   });
   if (!response.ok) throw new Error('Failed to resend link');
@@ -100,7 +115,7 @@ export const logoutUser = async () => {
   const email = sessionStorage.getItem('email'); 
 
   try {
-    const response = await fetch(`${API_URL}/auth/logout`, {
+    const response = await fetch(`${API_URL}/api/auth/logout`, {
       method: "POST",
       headers: getAuthHeaders(),
       body: JSON.stringify({ email: email || "" }), 
@@ -118,7 +133,7 @@ export const logoutUser = async () => {
   }
 };
 export const changePassword = async (data: ChangePasswordRequest) => {
-  const response = await fetch(`${API_URL}/auth/change-password`, {
+  const response = await fetch(`${API_URL}/api/auth/change-password`, {
     method: "POST",
     headers: {
       'accept': 'application/json',

@@ -62,16 +62,30 @@ export const useQuestionPageAction = () => {
     }
 
     if (isLastStep) {
+      const rawRisk = formData.riskTolerance.toLowerCase();
+      const rawKnowledge = formData.investmentKnowledge.toLowerCase();
+
+      let safeRisk = "medium"; 
+      if (rawRisk.includes("low") || rawRisk.includes("conservative")) safeRisk = "low";
+      if (rawRisk.includes("medium") || rawRisk.includes("moderate")) safeRisk = "medium";
+      if (rawRisk.includes("high") || rawRisk.includes("aggressive")) safeRisk = "high";
+
+      let safeKnowledge = "beginner";
+      if (rawKnowledge.includes("beginner") || rawKnowledge.includes("basic")) safeKnowledge = "beginner";
+      if (rawKnowledge.includes("intermediate")) safeKnowledge = "intermediate";
+      if (rawKnowledge.includes("advanced") || rawKnowledge.includes("expert")) safeKnowledge = "advanced";
+
       const payload: AIRequestPayload = {
         age: Number(formData.age),
         investmentPurpose: formData.investmentPurpose,
         investmentHorizon: Number(formData.investmentHorizon),
-        investmentKnowledge: formData.investmentKnowledge,
-        riskTolerance: formData.riskTolerance,
+        investmentKnowledge: safeKnowledge, 
+        riskTolerance: safeRisk, 
         amount: Number(formData.amount),
         currency: formData.currency,
         location: formData.location || "Lagos"
       };
+      
       mutation.mutate(payload);
     } else {
       setCurrentStep((prev) => prev + 1);

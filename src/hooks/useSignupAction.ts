@@ -1,20 +1,21 @@
 import type { SignupRequest } from "../types";
 import { signupUser, confirmUser } from "../api/auth"; 
 import { useMutation } from "@tanstack/react-query";
-import {useState} from "react"   
+import { useState } from "react";   
 import { useNavigate } from "react-router-dom";
 import type React from "react";
 import * as Yup from "yup";
 import { signupSchema } from "../utils/validation";
 
 export const useSignupAction = () => {
-       const navigate = useNavigate();
-     const [formData, setFormData] = useState<SignupRequest>({
+    const navigate = useNavigate();
+    
+    const [formData, setFormData] = useState<SignupRequest>({ 
         email: '',
-        first_name: '',
-        last_name: '',
+        firstName: '',
+        lastName: '',
         password: '',
-        username: '',
+        userName: '',
     });
 
     const [status, setStatus] = useState({ type: '', message: '' });
@@ -58,15 +59,16 @@ export const useSignupAction = () => {
         setStatus({ type: '', message: '' });
         try {
             await signupSchema.validate(formData, { abortEarly: false });
+            // Now you can just send formData directly because it already perfectly matches the backend!
             await signupMutation.mutateAsync(formData);
         } catch (error) {
             if (error instanceof Yup.ValidationError) {
-                // This joins all errors found into one long sentence
                 const allErrors = error.inner.map(err => err.message).join(" | ");
                 setStatus({ type: 'error', message: allErrors });
             }
         }
     };
+    
     return {
         status,
         showPassword,

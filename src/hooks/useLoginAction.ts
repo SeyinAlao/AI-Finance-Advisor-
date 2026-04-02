@@ -2,11 +2,18 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { loginUser } from "../api/auth";
-import type { LoginRequest } from "../types";
+import type { LoginRequest, LoginResponse } from "../types";
 import * as Yup from "yup";
 import { loginSchema } from "../utils/validation";
 
-export const useLoginAction = () => {     // remember useform is for form handling and validation, useLoginAction is for login logic and state management.
+type ExpectedLoginResponse = LoginResponse & {
+  response?: {
+    token?: string;
+  };
+  token?: string;
+};
+
+export const useLoginAction = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<LoginRequest>({
     email: "",
@@ -18,9 +25,10 @@ export const useLoginAction = () => {     // remember useform is for form handli
 
   const mutation = useMutation({
     mutationFn: loginUser,
-    onSuccess: (data) => {
+    onSuccess: (data: ExpectedLoginResponse) => {
       console.log("Login Successful! Response Data:", data);
-      const token = data.token;
+      
+      const token = data?.response?.token || data?.token;
 
       if (token) {
         if (rememberMe) {
@@ -34,7 +42,7 @@ export const useLoginAction = () => {     // remember useform is for form handli
           type: "success",
           message: "Login successful! Redirecting...",
         });
-        navigate("/dashboard");
+        setTimeout(() => navigate("/dashboard"), 500);
       } else {
         setStatus({
           type: "error",
@@ -51,20 +59,20 @@ export const useLoginAction = () => {     // remember useform is for form handli
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // 2. Modified handleSubmit to include the Yup check
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus({ type: "", message: "" });
 
     try {
       await loginSchema.validate(formData, { abortEarly: false });
-      await mutation.mutateAsync(formData);
+      
+      mutation.mutate(formData);
 
     } catch (err: unknown) {
       if (err instanceof Yup.ValidationError) {
         setStatus({ type: "error", message: err.inner[0].message });
       } else {
-        setStatus({ type: "error", message: "An unexpected error occurred" });
+        setStatus({ type: "error", message: "Form validation failed" });
       }
     }
   };

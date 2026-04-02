@@ -153,16 +153,16 @@ const HistoryPage = () => {
                       </h4>
                       <p className="text-xs text-gray-500 font-medium mt-1 flex items-center gap-2">
                         <Calendar className="w-3 h-3" />
-                        {item.created_at
-                          ? new Date(item.created_at).toLocaleDateString(
-                              undefined,
-                              {
+                        {(() => {
+                          const dateString = item.createdAt || item.created_at;
+                          return dateString
+                            ? new Date(dateString).toLocaleDateString(undefined, {
                                 year: "numeric",
                                 month: "long",
                                 day: "numeric",
-                              },
-                            )
-                          : "Date N/A"}
+                              })
+                            : "Date N/A";
+                        })()}
                       </p>
                     </div>
                   </div>

@@ -10,7 +10,7 @@ import HistoryPage from './pages/HistoryPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 
 function App() {
-  return (
+  return ( // group into two protected and public routes, and add a layout for the dashboard 
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<LoginPage />} />
@@ -22,8 +22,10 @@ function App() {
         <Route path="plan" element={<PlanPage />} />
         <Route path="history" element={<HistoryPage />} />
         <Route path="settings" element={<SettingsPage />} />
+        <Route path="/reset-password-now" element={<SettingsPage />} />
+        <Route path="/questionnaire" element={<QuestionPage />} />
       </Route>
-      <Route path="/questionnaire" element={<QuestionPage />} />
+      
     </Routes>
   );
 }

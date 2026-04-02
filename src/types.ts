@@ -1,10 +1,10 @@
 
 export interface SignupRequest {
   email: string;
-  first_name: string;
-  last_name: string;
+  firstName: string;
+  lastName: string;
   password: string;
-  username: string;
+  userName: string;
 }
 
 export interface SignupResponse {
@@ -33,9 +33,9 @@ export interface ChangePasswordRequest {
 export interface UserProfile {
   id: string;
   email: string;
-  first_name: string;
-  last_name: string;
-  username: string;
+  firstName: string;
+  lastName: string;
+  userName: string;
 }
 
 export interface PasswordResetRequest {
@@ -79,20 +79,21 @@ export interface FormQuestions {
 
 export interface Profile {
   email: string;
-  firstname: string;
-  lastname: string;
-  username: string;
+  firstName: string;
+  lastName: string;
+  userName: string;
   isActive: boolean;
   status: string;
 }
 
 export interface UpdateProfileRequest {
-  first_name?: string;
-  last_name?: string;
-  username?: string;
+  firstName?: string;
+  lastName?: string;
+  userName?: string;
 }
 
 export interface HistoryItem {
   id?: string | number;
   created_at?: string;
+  createdAt?: string;
 }
