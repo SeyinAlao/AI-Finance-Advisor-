@@ -1,16 +1,23 @@
 import React from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, Navigate } from 'react-router-dom';
 import { LayoutDashboard, History, Settings, LogOut, PlusCircle, Menu, X } from 'lucide-react';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('email');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('email');
     navigate('/login');
   };
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50 font-sans">

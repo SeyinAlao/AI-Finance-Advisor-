@@ -1,41 +1,41 @@
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query'; 
+import { fetchAIHistory } from '../api/ai'; 
 
-export interface Asset {
-  financial_product: string;
-  ticker: string;
-  provider: string;
-  brief_description: string;
-  expected_return: string;
-  composition: number;
-  principal: number;
-  estimated_return_value: number;
-}
-
-interface PlanResponse {
-  success: boolean;
-  response: {
-    message: string;
-    id?: number;
-    data: {
-      recommendations: Asset[];
-    };
-  };
-}
+import type { PlanResponse, HistoryPlanItem, Asset } from '../types';
 
 export const usePlanPageAction = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const statePlan = location.state?.plan as PlanResponse | undefined;
 
-  const rawPlan = location.state?.plan as PlanResponse | undefined;
-  
+  const { data: fetchedPlan, isLoading: isQueryLoading } = useQuery<HistoryPlanItem | null>({
+    queryKey: ['latestAIHistory'],
+    queryFn: async () => {
+      const history = await fetchAIHistory(1, 1);
+      return history?.length ? history[0] : null;
+    },
+    enabled: !statePlan, 
+  });
+  const isLoading = !statePlan ? isQueryLoading : false;
+
   let assets: Asset[] = [];
   let adviceText = "We have arranged a diversified portfolio to balance your growth targets with risk management.";
 
-  if (rawPlan?.response?.data?.recommendations) {
-    assets = rawPlan.response.data.recommendations;
-    
-    if (rawPlan.response.message) {
-      adviceText = rawPlan.response.message;
+  const activePlan = statePlan || fetchedPlan;
+
+  if (activePlan) {
+    if ('response' in activePlan && activePlan.response?.data?.recommendations) {
+      assets = activePlan.response.data.recommendations;
+      if (activePlan.response.message) {
+        adviceText = activePlan.response.message;
+      }
+    } 
+    else if ('data' in activePlan && activePlan.data?.recommendations) {
+      assets = activePlan.data.recommendations;
+      if (activePlan.message) {
+        adviceText = activePlan.message;
+      }
     }
   }
 
@@ -52,5 +52,6 @@ export const usePlanPageAction = () => {
     totalEstReturn,
     roiPercentage,
     navigate,
+    isLoading, 
   };
 };

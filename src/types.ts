@@ -96,4 +96,46 @@ export interface HistoryItem {
   id?: string | number;
   created_at?: string;
   createdAt?: string;
+  message?: string;
+  data?: {
+    recommendations: Asset[];
+  };
+  response?: {
+    message: string;
+    data: {
+      recommendations: Asset[];
+    };
+  };
+}
+
+export interface Asset {
+  financial_product: string;
+  ticker: string;
+  provider: string;
+  brief_description: string;
+  expected_return: string;
+  composition: number;
+  principal: number;
+  estimated_return_value: number;
+}
+
+
+export interface PlanResponse {
+  success: boolean;
+  response: {
+    message: string;
+    id?: number;
+    data: {
+      recommendations: Asset[];
+    };
+  };
+}
+
+export interface HistoryPlanItem {
+  id?: number;
+  message: string;
+  data: {
+    recommendations: Asset[];
+  };
+  created_at?: string; 
 }

@@ -31,6 +31,7 @@ const HistoryPage = () => {
     clearFilters,
     handlePreviousPage,
     handleNextPage,
+    handleViewDetails, 
   } = useHistoryPageAction();
 
   return (
@@ -141,6 +142,7 @@ const HistoryPage = () => {
               {historyList.map((item: HistoryItem, index: number) => (
                 <div
                   key={index}
+                  onClick={() => handleViewDetails(item)}
                   className="p-5 hover:bg-green-50/50 transition-colors flex justify-between items-center group cursor-pointer"
                 >
                   <div className="flex items-center gap-5">

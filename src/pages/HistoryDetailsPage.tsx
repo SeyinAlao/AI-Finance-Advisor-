@@ -1,37 +1,28 @@
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell 
+import {  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell 
 } from 'recharts';
 import { 
-  ArrowLeft, TrendingUp, PieChart, ShieldCheck, Wallet, Info, 
-  Loader2
+  ArrowLeft, TrendingUp, PieChart, ShieldCheck, Wallet, Info 
 } from 'lucide-react';
-import { usePlanPageAction } from '../hooks/usePlanPageAction';
- import CHART_COLORS from '../utility/chartColors'; 
-const PlanPage = () => {
-   const { assets, adviceText, totalPrincipal, totalEstReturn, roiPercentage, navigate, isLoading } = usePlanPageAction();
-   
-     if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[70vh] w-full">
-        <Loader2 className="w-12 h-12 text-emerald-600 animate-spin mb-4" />
-        <p className="text-slate-500 font-medium">Loading your latest wealth strategy...</p>
-      </div>
-    );
-   }
-    if (!assets || assets.length === 0) {
+import { useHistoryDetailsAction } from '../hooks/useHistoryDetailAction';
+import CHART_COLORS from '../utility/chartColors';
+
+const HistoryDetailsPage = () => {
+  const { assets, adviceText, totalPrincipal, totalEstReturn, roiPercentage, navigate } = useHistoryDetailsAction();
+
+  if (!assets || assets.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6 text-center">
         <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 max-w-md">
           <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
             <Info className="w-8 h-8 text-red-500" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Unable to Load Plan</h2>
-          <p className="text-gray-500 mb-6">We couldn't retrieve the portfolio data. This usually happens if the page was refreshed.</p>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Details Unavailable</h2>
+          <p className="text-gray-500 mb-6">We couldn't retrieve the portfolio data for this past record.</p>
           <button 
-            onClick={() => navigate('/questionnaire')}
+            onClick={() => navigate('/dashboard/history')}
             className="w-full py-3 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800 transition-all"
           >
-            Create New Plan
+            Back to History
           </button>
         </div>
       </div>
@@ -45,17 +36,17 @@ const PlanPage = () => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
           <div>
             <button 
-              onClick={() => navigate('/dashboard/questionnaire')}
+              onClick={() => navigate('/dashboard/history')}
               className="group flex items-center text-slate-500 hover:text-emerald-700 transition-colors mb-4 text-sm font-medium"
             >
               <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-              Retake Assessment
+              Back to History
             </button>
             <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
-              Your Wealth Strategy
+              Historical Strategy
             </h1>
             <p className="text-slate-500 mt-2 text-lg">
-              Personalized allocation based on your profile.
+              A review of your previously generated portfolio.
             </p>
           </div>
 
@@ -79,6 +70,7 @@ const PlanPage = () => {
              </div>
           </div>
         </div>
+
         <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border-l-4 border-emerald-500">
           <div className="flex items-start gap-4">
             <div className="p-3 bg-emerald-100 rounded-full shrink-0">
@@ -143,6 +135,7 @@ const PlanPage = () => {
                 </ResponsiveContainer>
               </div>
             </div>
+            
             <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
               <table className="w-full text-left border-collapse">
                 <thead className="bg-slate-50 border-b border-slate-100">
@@ -173,6 +166,7 @@ const PlanPage = () => {
               </table>
             </div>
           </div>
+          
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 h-full">
               <h3 className="text-lg font-bold text-slate-900 mb-6 pb-4 border-b border-slate-100">
@@ -207,4 +201,4 @@ const PlanPage = () => {
   );
 };
 
-export default PlanPage;
+export default HistoryDetailsPage;

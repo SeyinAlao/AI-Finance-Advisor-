@@ -66,7 +66,7 @@ export const loginUser = async (Credentials: LoginRequest): Promise<LoginRespons
     let errorMessage = 'Login failed';
     try {
         const errorData = await response.json();
-        console.log("🔥 THE SECRET ERROR IS:", JSON.stringify(errorData, null, 2));
+        console.log(" THE SECRET ERROR IS:", JSON.stringify(errorData, null, 2));
 
         if (errorData.errors?.fieldErrors) {
             const firstFailedField = Object.keys(errorData.errors.fieldErrors)[0];

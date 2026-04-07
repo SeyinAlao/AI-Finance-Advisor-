@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchAIHistory } from "../api/ai";
+import { useNavigate } from "react-router-dom";
+import type { HistoryItem } from "../types";
 
 export const useHistoryPageAction = () => {
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const limit = 10;
 
@@ -13,6 +16,12 @@ export const useHistoryPageAction = () => {
     from?: string;
     to?: string;
   }>({});
+
+  const handleViewDetails = (item: HistoryItem) => {
+    navigate(`/dashboard/history/${item.id || 'details'}`, { 
+      state: { plan: item }
+    });
+  };
 
   const formatLocalDate = (date: Date | null) => {
     if (!date) return undefined;
@@ -78,6 +87,7 @@ export const useHistoryPageAction = () => {
     error,
     page,
     limit,
+    handleViewDetails,
     setTempFromDate,
     setTempToDate,
     refetch,
