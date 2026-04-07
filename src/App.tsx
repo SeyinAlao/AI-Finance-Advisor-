@@ -15,7 +15,6 @@ import PublicRoute from './components/PublicRoute';
 function App() {
   return (
     <Routes>
-      {/* PUBLIC ROUTES: Only accessible if you are NOT logged in */}
       <Route element={<PublicRoute />}>
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<LoginPage />} />
@@ -23,12 +22,10 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       </Route>
 
-      {/* PROTECTED ROUTES: Only accessible if you HAVE a token */}
       <Route element={<ProtectedRoute />}>
         <Route path="/reset-password-now" element={<SettingsPage />} />
         <Route path="/questionnaire" element={<QuestionPage />} />
         
-        {/* Dashboard Layout */}
         <Route path="/dashboard" element={<DashboardPage />}>
           <Route index element={<Navigate to="/dashboard/plan" replace />} />
           <Route path="plan" element={<PlanPage />} />
