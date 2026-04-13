@@ -1,12 +1,13 @@
 import type { LoginRequest,LoginResponse, SignupRequest, SignupResponse, ChangePasswordRequest, PasswordResetRequest, ConfirmSignupRequest } from "../types";
 
-const API_URL = import.meta.env.DEV ? "" : "https://advisor-blush.vercel.app";
+const API_URL = import.meta.env.DEV ? "https://advisor-blush.vercel.app" : "";
 
 const getAuthHeaders = () => {
-  const token = sessionStorage.getItem('token');
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  
   return {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}` 
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
   };
 };
 
@@ -137,7 +138,7 @@ export const changePassword = async (data: ChangePasswordRequest) => {
     method: "POST",
     headers: {
       'accept': 'application/json',
-      'Content-Type': "application/json",
+      ...getAuthHeaders(), 
     },
     body: JSON.stringify(data),
   });
