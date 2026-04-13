@@ -1,18 +1,19 @@
 import { useState } from 'react';
 import { changePassword } from '../api/auth';
 import { useLocation, useNavigate } from 'react-router-dom';
+import type { ChangePasswordRequest } from '../types'; 
 
 export const useSettingsPageAction = () => {
-    const location = useLocation();
-    const navigate = useNavigate();
-     const resetTokenFromFlow = location.state?.token; // checks if password passed from forgot password flow is present in location state
-  const isResetting = Boolean(resetTokenFromFlow); // if its present It enters reset mode otherwise normal settings mode
+  const location = useLocation();
+  const navigate = useNavigate();
+  const resetTokenFromFlow = location.state?.token;
+  const isResetting = Boolean(resetTokenFromFlow);
 
   const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
   const [message, setMessage] = useState({ type: '', text: '' });
   const [isLoading, setIsLoading] = useState(false); 
   
-  const userEmail = localStorage.getItem('email') || 'user@example.com';
+  const userEmail = localStorage.getItem('email') || sessionStorage.getItem('email') || 'user@example.com';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPasswords({ ...passwords, [e.target.name]: e.target.value });
@@ -30,43 +31,38 @@ export const useSettingsPageAction = () => {
     setIsLoading(true);
 
     try {
-      const activeToken = resetTokenFromFlow || localStorage.getItem('token') || ""; //checks if token is present if not localstorage and if not defaults to an empty string. 
+      const activeToken = resetTokenFromFlow || localStorage.getItem('token') || sessionStorage.getItem('token') || ""; 
 
-      interface ChangePasswordPayload {
-        new_password: string;
-        token: string;
-        current_password?: string;
-      }
-
-      const payload: ChangePasswordPayload = { //Basically this makes sure that the password follows the standard the API is expecting 
-        new_password: passwords.new,
+      const payload: ChangePasswordRequest = { 
+        newPassword: passwords.new, 
         token: activeToken
       };
+      
       if (!isResetting) {
-        payload.current_password = passwords.current; // current password is only needed for normal settings mode, not for reset mode where token is sufficient for authentication
+        payload.currentPassword = passwords.current; 
       }
 
-      await changePassword(payload); // it awaits completions 
+      await changePassword(payload); 
 
       setMessage({ 
         type: 'success', 
-        text: isResetting ? 'Password reset successful!' : 'Password updated!' // the message is different based on whether user is resetting password or just changing it from settings
+        text: isResetting ? 'Password reset successful!' : 'Password updated!' 
       });
       
       setPasswords({ current: '', new: '', confirm: '' });
 
       if (isResetting) {
-        setTimeout(() => navigate('/login'), 2000); // if its reset it waits 2 seconds and returns to login page so new password can be logged in 
+        setTimeout(() => navigate('/login'), 2000); 
       }
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Something went wrong';
       setMessage({ type: 'error', text: errorMessage });
     } finally {
-      setIsLoading(false); // loading state is reset 
+      setIsLoading(false); 
     }
   };
 
-  return{
+  return {
     message,
     isLoading,
     passwords,

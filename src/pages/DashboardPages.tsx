@@ -7,17 +7,17 @@ const DashboardPage = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('email');
+  const handleLogout = () => {  // It leaves no trace of the user's session behind, 
+    localStorage.removeItem('token'); // Securing the app before kicking them back to the login screen.
+    localStorage.removeItem('email');  
     sessionStorage.removeItem('token');
     sessionStorage.removeItem('email');
     navigate('/login');
   };
 
   if (!token) {
-    return <Navigate to="/login" replace />;
-  }
+    return <Navigate to="/login" replace />; // Redirect to login if the token isn't found or authenticated.
+  } // The replace prop prevents adding a new entry to the history stack, so the user can't go back to the dashboard after logging out.
 
   return (
     <div className="flex min-h-screen bg-gray-50 font-sans">
